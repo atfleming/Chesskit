@@ -1,0 +1,65 @@
+# fetch-games.yml
+#
+# Once a day, this workflow downloads new rapid and daily games from
+# Chess.com, saves them in games/, and commits them. The commit triggers a
+# Netlify deploy, so new games show up on the site without any manual work.
+# You can also run it any time from the repo's Actions tab ("Run workflow").
+
+name: Fetch Chess.com games
+
+on:
+  # Runs every day at 11:13 UTC, which is early morning in Memphis.
+  # GitHub may delay scheduled runs by a few minutes, which doesn't matter here.
+  schedule:
+    - cron: "13 11 * * *"
+  # Adds a "Run workflow" button on the Actions tab for on-demand syncs.
+  workflow_dispatch:
+    inputs:
+      months:
+        description: 'How many recent months to check ("all" for full history)'
+        required: false
+        default: "2"
+
+# The workflow needs permission to push the new games back to the repo.
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      # Get a copy of the repo so the script can see which games already exist.
+      - uses: actions/checkout@v4
+
+      # Install Node 22, matching the version the site builds with.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # Install the repo's packages; the script uses chess.js to read games.
+      # The npm cache above keeps this to well under a minute.
+      - name: Install packages
+        run: npm ci --no-audit --no-fund
+
+      # Download new games and write them into games/.
+      - name: Fetch new games
+        env:
+          CHESSCOM_USER: atf901
+          TIME_CLASSES: rapid,daily
+          MONTHS: ${{ github.event.inputs.months || '2' }}
+        run: node scripts/fetch-chesscom-games.mjs
+
+      # Commit and push only when something actually changed, so quiet days
+      # don't create empty commits or trigger pointless Netlify deploys.
+      - name: Commit new games
+        run: |
+          if git diff --quiet -- games/; then
+            echo "No new games today."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add games/
+          git commit -m "Add new Chess.com games"
+          git push
