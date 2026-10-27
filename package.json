@@ -4,7 +4,9 @@
   "private": true,
   "license": "GPL-3.0-only",
   "scripts": {
+    "predev": "node scripts/build-games-index.mjs",
     "dev": "next dev",
+    "prebuild": "node scripts/build-games-index.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint --ext .ts,.tsx src/ && tsc --noEmit",

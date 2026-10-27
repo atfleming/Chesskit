@@ -1,4 +1,5 @@
 import { formatGameToDatabase } from "@/lib/chess";
+import { syncRepoGames } from "@/lib/repoGames";
 import { GameEval } from "@/types/eval";
 import { Game } from "@/types/game";
 import { Chess } from "chess.js";
@@ -52,6 +53,16 @@ export const useGameDatabase = (shouldFetchGames?: boolean) => {
   useEffect(() => {
     loadGames();
   }, [loadGames]);
+
+  // Once the database is open, import any games committed to the repo's
+  // games/ folder that this browser hasn't stored yet, then refresh the list
+  // if anything new was added. syncRepoGames only does the work once per page load.
+  useEffect(() => {
+    if (!db) return;
+    syncRepoGames(db).then((added) => {
+      if (added > 0) loadGames();
+    });
+  }, [db, loadGames]);
 
   const addGame = useCallback(
     async (game: Chess) => {

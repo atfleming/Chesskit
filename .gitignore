@@ -21,3 +21,6 @@ tsconfig.tsbuildinfo
 .cdk.staging
 cdk.out
 cdk.context.json
+
+# generated from games/ by scripts/build-games-index.mjs
+public/games.json

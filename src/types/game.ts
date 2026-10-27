@@ -13,6 +13,8 @@ export interface Game {
   eval?: GameEval;
   termination?: string;
   timeControl?: string;
+  /** Unique ID for games imported from the repo's games/ folder, used to skip duplicates. */
+  repoKey?: string;
 }
 
 export interface Player {
