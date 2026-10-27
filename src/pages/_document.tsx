@@ -27,6 +27,21 @@ export default function Document() {
           content="Analyze your chess games for free on any device with Stockfish!"
         />
 
+        {/* App install (PWA): points browsers at the app manifest so the site
+            can be installed on a home screen or Dock and open in its own window. */}
+        <link rel="manifest" href="/site.webmanifest" />
+        {/* Color browsers use for the title bar and status bar of the installed app. */}
+        <meta name="theme-color" content="#5d9948" />
+        {/* Tells iPad and iPhone Safari to open the home-screen app full screen,
+            without the Safari address bar. */}
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        {/* Name shown under the icon when added to an iPad or iPhone home screen. */}
+        <meta name="apple-mobile-web-app-title" content="Chesskit" />
+        {/* Keeps the iOS status bar as a normal bar above the app so it never
+            covers the top of the page. */}
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
         {/* OG (Social networks) */}
         <meta property="og:title" content="chesskit.org" />
         <meta property="og:type" content="website" />
