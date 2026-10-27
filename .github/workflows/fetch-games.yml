@@ -28,17 +28,18 @@ jobs:
   fetch:
     runs-on: ubuntu-latest
     steps:
-      # Get a copy of the repo so the script can see which games already exist.
-      - uses: actions/checkout@v4
-
-      # Install Node 22, matching the version the site builds with.
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
+      # Your account only allows actions from repos you own, so this workflow
+      # uses no third-party actions. GitHub's runners already include git and
+      # Node.js, so a plain git clone replaces actions/checkout, and the
+      # built-in token lets the job push the new games back afterward.
+      - name: Clone the repo
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git clone --depth 1 "https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git" .
+          node --version
 
       # Install the repo's packages; the script uses chess.js to read games.
-      # The npm cache above keeps this to well under a minute.
       - name: Install packages
         run: npm ci --no-audit --no-fund
 
@@ -54,7 +55,7 @@ jobs:
       # don't create empty commits or trigger pointless Netlify deploys.
       - name: Commit new games
         run: |
-          if git diff --quiet -- games/; then
+          if [ -z "$(git status --porcelain -- games/)" ]; then
             echo "No new games today."
             exit 0
           fi
